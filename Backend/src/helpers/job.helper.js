@@ -4,53 +4,61 @@ import sgMail from '@sendgrid/mail';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendMailToCandidates = async (candidates, job, companyName) => {
-    try {
-        // Email message body template
-        const messageBody = `
-            Greetings!
 
-            We are excited to inform you that ${job.companyName} is hiring for a ${job.jobTitle} position with a competitive salary of 8 LPA.
+   const batchList = 10;
 
-            To apply, please complete the assignment provided in the document below. The submission form link is included within the assignment:
+   const messageBody = `Greetings!
 
-            https://docs.google.com/document/d/1oessphAkXaaHCbsDam1Z1TEtLDszfz9eE_OLYEcMX5M/edit?usp=sharing
+We are excited to inform you that ${companyName} is hiring for a ${job.jobTitle} position with a competitive salary of 8 LPA.
 
-            Key Details:
+   To apply, please complete the assignment provided in the document below. The submission form link is included within the assignment:
 
-            Role: ${job.jobTitle}
-            Salary: 8 LPA
-            Location: Remote
-            Submission Deadline: 8 PM, ${new Date(job.endDate).toLocaleDateString()}
+   https://docs.google.com/document/d/1oessphAkXaaHCbsDam1Z1TEtLDszfz9eE_OLYEcMX5M/edit?usp=sharing
 
-            Please review the instructions carefully and ensure timely submission of your assignment. If you have any questions, feel free to contact us at atul@cuvette.tech.
+   Key Details:
 
-            We look forward to receiving your application and wish you the best of luck!
+   Role: ${job.jobTitle}
+   Salary: 8 LPA
+   Location: Remote
+   Submission Deadline: 8 PM, ${new Date(job.endDate).toLocaleDateString()}
 
-            Best regards,
-            Cuvette Team
+   Please review the instructions carefully and ensure timely submission of your assignment. If you have any questions, feel free to contact us at atul@cuvette.tech.
 
-            Don't want to receive these e-mails? Unsubscribe
-        `;
+   We look forward to receiving your application and wish you the best of luck!
 
-        // Iterate through each candidate email and send the job notification
-        for (const email of candidates) {
-            const message = {
-                to: email, // Candidate's email
-                from: process.env.SENDGRID_EMAIL_FROM, // Verified sender email (must be verified in SendGrid)
-                subject: `New Job Opportunity: ${job.jobTitle}`,
-                text: messageBody,
-            };
+   Best regards,
+   Cuvette Team
 
-            // Send email using SendGrid
-            await sgMail.send(message);
-        }
+   Don't want to receive these e-mails? Unsubscribe;`
+;
 
-        console.log('Emails sent successfully to all candidates!');
 
-    } catch (error) {
-        console.error('Error sending email to candidates:', error.response ? error.response.body : error);
-        throw error; // Propagate the error
+
+   const sendBatchEmails = async (batch) => {
+   const messages = batch.map(email => ({
+    to: email,
+    from: {
+        email: process.env.SENDGRID_EMAIL_FROM,
+        name: 'Sachin Parmar'
+    },
+    subject: `New Job Opportunity at ${companyName} - ${job.title}`,
+    text: messageBody
+
+   }))
+
+   await sgMail.send(messages);
+   }
+
+   try {
+    for(let i = 0; i< candidates.length; i+=batchList){
+        const batch = candidates.slice(i, i+batchList);
+        await sendBatchEmails(batch);
     }
+    console.log('Email sent successfully to all the candidates!');
+   } catch (error) {
+    console.error('Error sending email to candidates:', error.response ? error.response.body : error);
+    throw error;
+   }
 };
 
 export default sendMailToCandidates;
