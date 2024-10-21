@@ -1,17 +1,16 @@
 import { Job } from "../models/job.model.js";
-import sendMailToCandidates from "../routers/job.route.js" // Assuming you have a helper file for email sending
+import sendMailToCandidates from "../helpers/job.helper.js" // Assuming you have a helper file for email sending
 
 const postJob = async (req, res) => {
     try {
         const { jobTitle, jobDescription, exprienceLevel, candidates, endDate } = req.body;
-        console.log(jobTitle, jobDescription, exprienceLevel, candidates, endDate);
 
         const company = req.company;
         const companyId = company.id;
 
         // Check if phone and email are verified
         if (company.isPhoneVerified && company.isEmailVerified) {
-            // Create and save the new job
+            // Create a job object but don't save it yet
             const job = new Job({
                 jobTitle, 
                 jobDescription, 
@@ -20,18 +19,22 @@ const postJob = async (req, res) => {
                 endDate, 
                 companyId
             });
+
+            // Try sending emails to candidates before saving the job
+            try {
+                await sendMailToCandidates(candidates, job, company.companyName);
+            } catch (emailError) {
+                return res.status(500).json({ message: 'Failed to send emails to candidates', error: emailError.message });
+            }
+
+            // If emails are sent successfully, save the job
             await job.save();
 
             // Update the company's job array
-            const jobsCount = company.Jobs.length;
-            company.Jobs[jobsCount] = job.id;  // Jobs[jobsCount] since array is 0-indexed
+            company.Jobs.push(job.id);
             await company.save();
 
-            // Send emails to all candidates
-            await sendMailToCandidates(candidates, job, company.companyName);
-
-            return res.status(201).json({ message: 'Job posted successfully!', job });
-
+            return res.status(201).json({ message: 'Job posted and emails sent successfully!', job });
         } else {
             return res.status(400).json({ message: 'Please verify your email and phone before posting a job.' });
         }
@@ -42,4 +45,6 @@ const postJob = async (req, res) => {
     }
 };
 
-export default postJob;
+
+
+export { postJob}
