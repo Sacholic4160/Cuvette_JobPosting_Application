@@ -4,7 +4,7 @@ import mongoose, { Schema } from "mongoose";
 const jobSchema = new mongoose.Schema({
     title: String,
     description: String,
-    experienceLevel: string,
+    experienceLevel: String,
     endDate: Date,
     candidates: [String], // Array of candidate emails
     companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' } // Automatically link the job to the company
