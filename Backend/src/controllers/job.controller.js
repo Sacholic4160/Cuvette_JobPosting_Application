@@ -10,19 +10,21 @@ const postJob = async (req, res) => {
 
         // Check if phone and email are verified
         if (company.isPhoneVerified && company.isEmailVerified) {
-            // Create a job object but don't save it yet
-            const job = new Job({
-                jobTitle, 
-                jobDescription, 
-                exprienceLevel, 
-                candidates, 
-                endDate, 
-                companyId
-            });
 
+          const jobData = {
+            jobTitle, 
+            jobDescription, 
+            exprienceLevel, 
+            candidates, 
+            endDate, 
+            companyId
+        } 
+            const job = new Job(jobData);
+
+             console.log(company);
             // Try sending emails to candidates before saving the job
             try {
-                await sendMailToCandidates(candidates, job, company.companyName);
+                await sendMailToCandidates(candidates, jobData, company.companyName);
             } catch (emailError) {
                 return res.status(500).json({ message: 'Failed to send emails to candidates', error: emailError.message });
             }
