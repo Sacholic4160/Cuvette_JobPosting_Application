@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const companySchema = new mongoose.Schema({
     Name: { type: String, required: true },   // Person's name
+    companyName: {type: String, required: true},
     Email: { type: String, required: true, unique: true },  // Email for login
     Password: { type: String, required: true },  // Hashed password
     Phone: { type: String },  // Mobile number for verification (optional)
