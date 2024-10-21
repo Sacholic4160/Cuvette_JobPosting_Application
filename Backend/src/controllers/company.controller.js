@@ -1,6 +1,6 @@
 import { Company } from "../models/company.model.js";
 import bcrypt from 'bcrypt'
-import { generateOtp, sendEmailOtp, sendPhoneOtp } from '../helpers/company.helper.js'
+import { generateOtp, generateToken, sendEmailOtp, sendPhoneOtp } from '../helpers/company.helper.js'
 
 
 const registerCompany = async (req, res) => {
@@ -30,14 +30,14 @@ const registerCompany = async (req, res) => {
     await company.save();
 
     // Try sending the email
-  
-      const status = await sendEmailOtp(Email, otp);
 
-      return status ? res.status(200).json({ message: 'OTP sent to email for verification' }) :   res.status(500).json({ error: 'Failed to send OTP email. Please try again later.' });
-      
+    const status = await sendEmailOtp(Email, otp);
+
+    return status ? res.status(200).json({ message: 'OTP sent to email for verification' }) : res.status(500).json({ error: 'Failed to send OTP email. Please try again later.' });
+
 
   } catch (error) {
-   return res.status(500).json({ error: `Error registering company: ${error.message}` });
+    return res.status(500).json({ error: `Error registering company: ${error.message}` });
   }
 };
 
@@ -45,10 +45,10 @@ const verifyEmail = async (req, res) => {
   try {
 
     const { email, otp } = req.body;
-   // console.log(typeof otp)
+    // console.log(typeof otp)
 
     const company = await Company.findOne({ Email: email });
-    if (!company) return  res.status(404).json({ error: 'Company not found!' });
+    if (!company) return res.status(404).json({ error: 'Company not found!' });
     console.log(company.emailOtp == otp)
     console.log(company.otpExpiry > new Date())
 
@@ -66,19 +66,19 @@ const verifyEmail = async (req, res) => {
       await sendPhoneOtp(company.Phone, phoneOtp);
       await company.save();
 
-       return res.status(200).json({ message: 'Email Verified, OTP sent to Phone!' });
+      return res.status(200).json({ message: 'Email Verified, OTP sent to Phone!' });
 
     }
     else {
-    return  res.status(400).json({ Error: 'Invalid or Expired OTP' });
+      return res.status(400).json({ Error: 'Invalid or Expired OTP' });
     }
   } catch (error) {
-   return  res.status(500).json({ error: 'Error verifying the email!' });
+    return res.status(500).json({ error: `Error verifying email: ${error}` });
   }
 }
 
 
- const verifyPhone = async (req, res) => {
+const verifyPhone = async (req, res) => {
   const { phone, otp } = req.body;
 
   try {
@@ -87,12 +87,15 @@ const verifyEmail = async (req, res) => {
     if (!company) {
       return res.status(404).json({ error: 'Company not found' });
     }
-
+    console.log(company.emailOtp == otp)
+    console.log(company.otpExpiry > new Date())
+    console.log(company)
     // Check if OTP is correct and not expired
-    if (company.phoneOtp === otp && company.otpExpiry > new Date()) {
+    if (company.phoneOtp == otp && company.otpExpiry > new Date()) {
       company.isPhoneVerified = true;
       company.phoneOtp = null; // Clear OTP after verification
       company.otpExpiry = null;
+      company.noOfOtp = (company.noOfOtp)+1;
       await company.save();
 
       // Generate JWT token
@@ -103,10 +106,11 @@ const verifyEmail = async (req, res) => {
         token, // Send token to the client
       });
     } else {
-     return  res.status(400).json({ error: 'Invalid or expired OTP' });
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
   } catch (error) {
-   return res.status(500).json({ error: 'Error verifying phone' });
+    
+    return res.status(500).json({ error: `Error verifying phone: ${error}` });
   }
 };
 
