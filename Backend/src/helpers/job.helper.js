@@ -6,6 +6,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const sendMailToCandidates = async (candidates, job, companyName) => {
 
    const batchList = 10;
+   console.log(candidates, job, companyName)
 
    const messageBody = `Greetings!
 
