@@ -10,7 +10,7 @@ const sendMailToCandidates = async (candidates, job, companyName) => {
 
    const messageBody = `Greetings!
 
-We are excited to inform you that ${companyName} is hiring for a ${job.jobTitle} position with a competitive salary of 8 LPA.
+We are excited to inform you that ${companyName} is hiring for a ${job.title} position with a competitive salary of 8 LPA.
 
    To apply, please complete the assignment provided in the document below. The submission form link is included within the assignment:
 
@@ -18,7 +18,7 @@ We are excited to inform you that ${companyName} is hiring for a ${job.jobTitle}
 
    Key Details:
 
-   Role: ${job.jobTitle}
+   Role: ${job.title}
    Salary: 8 LPA
    Location: Remote
    Submission Deadline: 8 PM, ${new Date(job.endDate).toLocaleDateString()}
@@ -31,34 +31,34 @@ We are excited to inform you that ${companyName} is hiring for a ${job.jobTitle}
    Cuvette Team
 
    Don't want to receive these e-mails? Unsubscribe;`
-;
+      ;
 
 
-
+   console.log(job)
    const sendBatchEmails = async (batch) => {
-   const messages = batch.map(email => ({
-    to: email,
-    from: {
-        email: process.env.SENDGRID_EMAIL_FROM,
-        name: 'Sachin Parmar'
-    },
-    subject: `New Job Opportunity at ${companyName} - ${job.title}`,
-    text: messageBody
+      const messages = batch.map(email => ({
+         to: email,
+         from: {
+            email: process.env.SENDGRID_EMAIL_FROM,
+            name: 'Sachin Parmar'
+         },
+         subject: `New Job Opportunity at ${companyName} - ${job.title}`,
+         text: messageBody
 
-   }))
+      }))
 
-   await sgMail.send(messages);
+      await sgMail.send(messages);
    }
 
    try {
-    for(let i = 0; i< candidates.length; i+=batchList){
-        const batch = candidates.slice(i, i+batchList);
-        await sendBatchEmails(batch);
-    }
-    console.log('Email sent successfully to all the candidates!');
+      for (let i = 0; i < candidates.length; i += batchList) {
+         const batch = candidates.slice(i, i + batchList);
+         await sendBatchEmails(batch);
+      }
+      console.log('Email sent successfully to all the candidates!');
    } catch (error) {
-    console.error('Error sending email to candidates:', error.response ? error.response.body : error);
-    throw error;
+      console.error('Error sending email to candidates:', error.response ? error.response.body : error);
+      throw error;
    }
 };
 
