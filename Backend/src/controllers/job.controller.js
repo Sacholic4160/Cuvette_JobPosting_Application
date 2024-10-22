@@ -11,17 +11,17 @@ const postJob = async (req, res) => {
         // Check if phone and email are verified
         if (company.isPhoneVerified && company.isEmailVerified) {
 
-          const jobData = {
-            jobTitle, 
-            jobDescription, 
-            exprienceLevel, 
-            candidates, 
-            endDate, 
-            companyId
-        } 
+            const jobData = {
+                title: jobTitle,
+                description: jobDescription,
+                exprienceLevel: exprienceLevel,
+                candidates: candidates,
+                endDate: endDate,
+                companyId
+            }
             const job = new Job(jobData);
 
-             console.log(company);
+            console.log(company);
             // Try sending emails to candidates before saving the job
             try {
                 await sendMailToCandidates(candidates, jobData, company.companyName);
@@ -30,12 +30,12 @@ const postJob = async (req, res) => {
             }
 
             // If emails are sent successfully, save the job
-            await job.save();
-
+            const savedJob = await job.save();
+            console.log(savedJob)
             // Update the company's job array
             company.Jobs.push(job.id);
-            await company.save();
-
+            const saveCompany = await company.save();
+            console.log(saveCompany)
             return res.status(201).json({ message: 'Job posted and emails sent successfully!', job });
         } else {
             return res.status(400).json({ message: 'Please verify your email and phone before posting a job.' });
@@ -49,4 +49,4 @@ const postJob = async (req, res) => {
 
 
 
-export { postJob}
+export { postJob }
