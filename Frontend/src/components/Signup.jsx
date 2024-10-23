@@ -46,12 +46,12 @@ function Signup() {
 
 
   return (
-    <div >
+    <div className='flex items-center justify-center'>
       
     </div>
   )
 }
 
-export default Signup
+export { Signup }
 
 
