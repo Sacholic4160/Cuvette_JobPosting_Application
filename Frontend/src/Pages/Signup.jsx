@@ -1,5 +1,6 @@
 import React from 'react'
-import { Signup as SignupComponent } from '../components/signup'
+//import { Signup as SignupComponent } from '../components/Signup.jsx'
+import { Signup as SignupComponent }  from '../components/signup'
 
 function Signup() {
   return (
@@ -10,4 +11,6 @@ function Signup() {
 }
 
 export default Signup
+
+
 
